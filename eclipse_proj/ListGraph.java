@@ -226,6 +226,10 @@ public class ListGraph<T> implements Graph<T> {
 	
 	private ArrayList<T> search_path(T from, T to)
 	{
+	    if (!all_nodes.contains(from) || !all_nodes.contains(to)) {
+	        return null;
+	    }
+
 		ArrayList<ArrayList<T>> potential_paths = new ArrayList<ArrayList<T>>();
 		{
 			ArrayList<T> start = new ArrayList<T>();
