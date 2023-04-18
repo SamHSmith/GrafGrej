@@ -38,6 +38,11 @@ public class ListGraph<T> implements Graph<T> {
 				weights.set(i, weight);
 				return;
 			}
+			if(nodes_one.get(i) == node2 && nodes_two.get(i) == node1)
+			{
+				weights.set(i, weight);
+				return;
+			}
 		}
 	}
 	
@@ -46,6 +51,10 @@ public class ListGraph<T> implements Graph<T> {
 		for(int i = 0; i < nodes_one.size(); i++)
 		{
 			if(nodes_one.get(i) == node1 && nodes_two.get(i) == node2)
+			{
+				return weights.get(i);
+			}
+			if(nodes_one.get(i) == node2 && nodes_two.get(i) == node1)
 			{
 				return weights.get(i);
 			}
@@ -67,6 +76,10 @@ public class ListGraph<T> implements Graph<T> {
 			{
 				ret.add(new Edge<T>(nodes_one.get(i), nodes_two.get(i), names.get(i), weights.get(i), this));
 			}
+			if(nodes_two.get(i) == node)
+			{
+				ret.add(new Edge<T>(nodes_two.get(i), nodes_one.get(i), names.get(i), weights.get(i), this));
+			}
 		}
 		return ret;
 	}
@@ -79,6 +92,10 @@ public class ListGraph<T> implements Graph<T> {
 			{
 				return new Edge<T>(nodes_one.get(i), nodes_two.get(i), names.get(i), weights.get(i), this);
 			}
+			if(nodes_two.get(i) == node1 && nodes_one.get(i) == node2)
+			{
+				return new Edge<T>(nodes_two.get(i), nodes_one.get(i), names.get(i), weights.get(i), this);
+			}
 		}
 		return null;
 	}
@@ -88,6 +105,11 @@ public class ListGraph<T> implements Graph<T> {
 		for(int i = 0; i < nodes_one.size(); i++)
 		{
 			if(nodes_one.get(i) == node1 && nodes_two.get(i) == node2)
+			{
+				nuke_soa_connection(i);
+				return;
+			}
+			if(nodes_one.get(i) == node2 && nodes_two.get(i) == node1)
 			{
 				nuke_soa_connection(i);
 				return;
@@ -109,6 +131,7 @@ public class ListGraph<T> implements Graph<T> {
 		{
 			nuke_soa_connection(index);
 		}
+		all_nodes.remove(node);
 	}
 	
 	private void nuke_soa_connection(int i)
