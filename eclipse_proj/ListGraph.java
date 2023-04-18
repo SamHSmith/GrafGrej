@@ -166,12 +166,60 @@ public class ListGraph<T> implements Graph<T> {
 	
 	public boolean pathExists(T from, T to)
 	{
-		return false;
+		return search_path(from, to) != null;
 	}
 	
 	public List<Edge<T>> getPath(T from, T to)
 	{
-		return new ArrayList<Edge<T>>();
+		ArrayList<T> nodes = search_path(from, to);
+		if(nodes == null)
+		{
+			return null; // bör throwa
+		}
+		
+		ArrayList<Edge<T>> edges = new ArrayList<Edge<T>>();
+		T prev = nodes.get(0);
+		for(int i = 1; i < nodes.size(); i++)
+		{
+			T current = nodes.get(i);
+			edges.add(this.getEdgeBetween(prev, current));
+			prev = current;
+		}
+		return edges;
+	}
+	
+	private ArrayList<T> search_path(T from, T to)
+	{
+		ArrayList<ArrayList<T>> potential_paths = new ArrayList<ArrayList<T>>();
+		{
+			ArrayList<T> start = new ArrayList<T>();
+			start.add(from);
+			potential_paths.add(start);
+		}
+		while(true)
+		{
+			ArrayList<ArrayList<T>> new_paths = new ArrayList<ArrayList<T>>();
+				
+			for(ArrayList<T> path : potential_paths)
+			{
+				T last = path.get(path.size()-1);
+				if(last == to)
+				{ return path; }
+				
+				for(Edge<T> edge : this.getEdgesFrom(last))
+				{
+					if(path.contains(edge.getDestination()))
+					{ continue; }
+					ArrayList<T> np = new ArrayList<T>(path);
+					np.add(edge.getDestination());
+					new_paths.add(np);
+				}
+			}
+			
+			if(new_paths.size() == 0)
+			{ return null; }
+			potential_paths = new_paths;
+		}
 	}
 	
 	@Override
