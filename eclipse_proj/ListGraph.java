@@ -158,8 +158,8 @@ public class ListGraph<T> implements Graph<T> {
 	    boolean connectionFound = false;
 
 	    for (int i = 0; i < nodesOne.size(); i++) {
-	        if ((nodesOne.get(i).equals(node1) && nodesTwo.get(i).equals(node2)) ||
-	            (nodesOne.get(i).equals(node2) && nodesTwo.get(i).equals(node1))) {
+	        if (nodesOne.get(i).equals(node1) && nodesTwo.get(i).equals(node2) ||
+	            nodesOne.get(i).equals(node2) && nodesTwo.get(i).equals(node1)) {
 	            nuke_soa_connection(i);
 	            connectionFound = true;
 	            break;
@@ -210,7 +210,7 @@ public class ListGraph<T> implements Graph<T> {
 		ArrayList<T> nodes = search_path(from, to);
 		if(nodes == null)
 		{
-			return null; // bör throwa
+			return null; // bör throwa?
 		}
 		
 		ArrayList<Edge<T>> edges = new ArrayList<Edge<T>>();
