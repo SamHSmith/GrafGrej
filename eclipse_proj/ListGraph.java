@@ -18,6 +18,10 @@ public class ListGraph<T> implements Graph<T> {
 	
 	public void connect(T node1, T node2, String name, int weight)
 	{
+		if (weight < 0) {
+            throw new IllegalArgumentException("Weight cannot be negative");
+        }
+
 		nodes_one.add(node1);
 		nodes_two.add(node2);
 		names.add(name);
@@ -31,6 +35,10 @@ public class ListGraph<T> implements Graph<T> {
 	
 	public void setConnectionWeight(T node1, T node2, int weight)
 	{
+		if (weight < 0) {
+            throw new IllegalArgumentException("Weight cannot be negative");
+        }
+		
 		for(int i = 0; i < nodes_one.size(); i++)
 		{
 			if(nodes_one.get(i) == node1 && nodes_two.get(i) == node2)
@@ -74,11 +82,11 @@ public class ListGraph<T> implements Graph<T> {
 		{
 			if(nodes_one.get(i) == node)
 			{
-				ret.add(new Edge<T>(nodes_one.get(i), nodes_two.get(i), names.get(i), weights.get(i), this));
+				ret.add(new Edge<T>(nodes_one.get(i), nodes_two.get(i), names.get(i), this));
 			}
 			if(nodes_two.get(i) == node)
 			{
-				ret.add(new Edge<T>(nodes_two.get(i), nodes_one.get(i), names.get(i), weights.get(i), this));
+				ret.add(new Edge<T>(nodes_two.get(i), nodes_one.get(i), names.get(i), this));
 			}
 		}
 		return ret;
@@ -100,11 +108,11 @@ public class ListGraph<T> implements Graph<T> {
 		{
 			if(nodes_one.get(i) == node1 && nodes_two.get(i) == node2)
 			{
-				return new Edge<T>(nodes_one.get(i), nodes_two.get(i), names.get(i), weights.get(i), this);
+				return new Edge<T>(nodes_one.get(i), nodes_two.get(i), names.get(i), this);
 			}
 			if(nodes_two.get(i) == node1 && nodes_one.get(i) == node2)
 			{
-				return new Edge<T>(nodes_two.get(i), nodes_one.get(i), names.get(i), weights.get(i), this);
+				return new Edge<T>(nodes_two.get(i), nodes_one.get(i), names.get(i), this);
 			}
 		}
 		return null;
@@ -160,5 +168,24 @@ public class ListGraph<T> implements Graph<T> {
 	public List<Edge<T>> getPath(T from, T to)
 	{
 		return new ArrayList<Edge<T>>();
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		for(T node : all_nodes)
+		{
+			builder.append(node + "\n");
+		}
+		for(int i = 0; i < nodes_one.size(); i++)
+		{
+			T a = nodes_one.get(i);
+			T b = nodes_two.get(i);
+			int weight = weights.get(i);
+			builder.append("till " + b + " med " + a + " -> " + b + " tar " + weight + "\n");
+			builder.append("till " + a + " med " + b + " -> " + a + " tar " + weight + "\n");
+		}
+		return builder.toString();
 	}
 }
