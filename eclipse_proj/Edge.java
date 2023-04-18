@@ -3,18 +3,12 @@ public class Edge<T> {
 	private T from;
     private T to;
     private String name;
-    private int weight;
     private ListGraph<T> graph;
 
-    public Edge(T from, T to, String name, int weight, ListGraph<T> graph) {
-        if (weight < 0) {
-            throw new IllegalArgumentException("Weight cannot be negative");
-        }
-
+    public Edge(T from, T to, String name, ListGraph<T> graph) {
         this.from = from;
         this.to = to;
         this.name = name;
-        this.weight = weight;
         this.graph = graph;
     }
 
@@ -30,8 +24,7 @@ public class Edge<T> {
         if (weight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
-        this.weight = weight;
-        graph.setConnectionWeight(this.from, this.to, this.weight);
+        graph.setConnectionWeight(this.from, this.to, weight);
     }
 
     public String getName() {
@@ -44,7 +37,7 @@ public class Edge<T> {
 
     @Override
     public String toString() {
-        return "Edge from " + from + " to " + to;
+        return "till " + to + " med " + from + " -> " + to + " tar " + this.getWeight();
     }
 
 }
