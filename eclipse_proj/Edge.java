@@ -4,9 +4,9 @@ public class Edge<T> {
     private T to;
     private String name;
     private int weight;
-    private Graph<T> graph;
+    private ListGraph<T> graph;
 
-    public Edge(T from, T to, String name, int weight, Graph<T> graph) {
+    public Edge(T from, T to, String name, int weight, ListGraph<T> graph) {
         if (weight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
@@ -23,7 +23,7 @@ public class Edge<T> {
     }
 
     public int getWeight() {
-        return this.weight;
+        return graph.getConnectionWeight(from, to);
     }
 
     public void setWeight(int weight) {
