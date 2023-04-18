@@ -24,10 +24,21 @@ public class ListGraph<T> implements Graph<T> {
 	    if (!all_nodes.contains(node1)) {
 	        throw new NoSuchElementException();
 	    }
-
 	    if (!all_nodes.contains(node2)) {
 	        throw new NoSuchElementException();
 	    }
+		for(int i = 0; i < nodes_one.size(); i++)
+		{
+			if(nodes_one.get(i) == node1 && nodes_two.get(i) == node2)
+			{
+		        throw new IllegalStateException();
+			}
+			if(nodes_one.get(i) == node2 && nodes_two.get(i) == node1)
+			{
+		        throw new IllegalStateException();
+			}
+		}
+
 
 		nodes_one.add(node1);
 		nodes_two.add(node2);
@@ -91,6 +102,9 @@ public class ListGraph<T> implements Graph<T> {
 	
 	public Collection<Edge<T>> getEdgesFrom(T node)
 	{
+	    if (!all_nodes.contains(node)) {
+	        throw new NoSuchElementException();
+	    }
 		ArrayList<Edge<T>> ret = new ArrayList<Edge<T>>();
 		for(int i = 0; i < nodes_one.size(); i++)
 		{
@@ -153,7 +167,7 @@ public class ListGraph<T> implements Graph<T> {
 	    }
 
 	    if (!connectionFound) {
-	        throw new NoSuchElementException();
+	        throw new IllegalStateException();
 	    }
 	}
 	
