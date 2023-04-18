@@ -28,7 +28,7 @@ public class ListGraph<T> implements Graph<T> {
 	
 	public Edge<T> getEdgeBetween(T noed1, T node2)
 	{
-		return new Edge<T>(null, null, "bla", 5);
+		return new Edge<T>(null, null, "bla", 5, this);
 	}
 	
 	public void disconnect(T node1, T node2)
