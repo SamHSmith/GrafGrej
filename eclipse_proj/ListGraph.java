@@ -21,6 +21,13 @@ public class ListGraph<T> implements Graph<T> {
 		if (weight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
+	    if (!all_nodes.contains(node1)) {
+	        throw new NoSuchElementException("Node1 not found in the graph");
+	    }
+
+	    if (!all_nodes.contains(node2)) {
+	        throw new NoSuchElementException("Node2 not found in the graph");
+	    }
 
 		nodes_one.add(node1);
 		nodes_two.add(node2);
