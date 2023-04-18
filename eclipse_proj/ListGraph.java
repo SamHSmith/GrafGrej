@@ -86,6 +86,16 @@ public class ListGraph<T> implements Graph<T> {
 	
 	public Edge<T> getEdgeBetween(T node1, T node2)
 	{
+		
+		if(!all_nodes.contains(node1))
+		{
+			throw new NoSuchElementException();
+		}
+		if(!all_nodes.contains(node2))
+		{
+			throw new NoSuchElementException();
+		}
+		
 		for(int i = 0; i < nodes_one.size(); i++)
 		{
 			if(nodes_one.get(i) == node1 && nodes_two.get(i) == node2)
