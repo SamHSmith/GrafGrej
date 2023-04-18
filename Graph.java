@@ -2,6 +2,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/* Jag tycker inte om denna. */
 public interface Graph<T> {
 
     void add(T node);
