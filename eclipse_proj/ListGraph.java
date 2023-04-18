@@ -8,13 +8,13 @@ import java.util.*;
 public class ListGraph<T> implements Graph<T> {
 
 	/* For nodes without links. */
-	public ArrayList<T> allNodes = new ArrayList<T>();
+	private ArrayList<T> allNodes = new ArrayList<T>();
 	
 	/* Links SOA */
-	public ArrayList<T> nodesOne = new ArrayList<T>();
-	public ArrayList<T> nodesTwo = new ArrayList<T>();
-	public ArrayList<String> names = new ArrayList<String>();
-	public ArrayList<Integer> weights = new ArrayList<Integer>();
+	private ArrayList<T> nodesOne = new ArrayList<T>();
+	private ArrayList<T> nodesTwo = new ArrayList<T>();
+	private ArrayList<String> names = new ArrayList<String>();
+	private ArrayList<Integer> weights = new ArrayList<Integer>();
 	
 	public void add(T node)
 	{
