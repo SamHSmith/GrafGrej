@@ -129,6 +129,10 @@ public class ListGraph<T> implements Graph<T> {
 	
 	public void remove(T node)
 	{
+		if (!all_nodes.contains(node)) {
+	        throw new NoSuchElementException();
+	    }
+		
 		ArrayList<Integer> to_remove = new ArrayList<Integer>();
 		for(int i = 0; i < nodes_one.size(); i++)
 		{
