@@ -22,11 +22,11 @@ public class ListGraph<T> implements Graph<T> {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
 	    if (!all_nodes.contains(node1)) {
-	        throw new NoSuchElementException("Node1 not found in the graph");
+	        throw new NoSuchElementException();
 	    }
 
 	    if (!all_nodes.contains(node2)) {
-	        throw new NoSuchElementException("Node2 not found in the graph");
+	        throw new NoSuchElementException();
 	    }
 
 		nodes_one.add(node1);
@@ -125,21 +125,29 @@ public class ListGraph<T> implements Graph<T> {
 		return null;
 	}
 	
-	public void disconnect(T node1, T node2)
-	{
-		for(int i = 0; i < nodes_one.size(); i++)
-		{
-			if(nodes_one.get(i) == node1 && nodes_two.get(i) == node2)
-			{
-				nuke_soa_connection(i);
-				return;
-			}
-			if(nodes_one.get(i) == node2 && nodes_two.get(i) == node1)
-			{
-				nuke_soa_connection(i);
-				return;
-			}
-		}
+	public void disconnect(T node1, T node2) {
+	    if (!all_nodes.contains(node1)) {
+	        throw new NoSuchElementException();
+	    }
+
+	    if (!all_nodes.contains(node2)) {
+	        throw new NoSuchElementException();
+	    }
+
+	    boolean connectionFound = false;
+
+	    for (int i = 0; i < nodes_one.size(); i++) {
+	        if ((nodes_one.get(i).equals(node1) && nodes_two.get(i).equals(node2)) ||
+	            (nodes_one.get(i).equals(node2) && nodes_two.get(i).equals(node1))) {
+	            nuke_soa_connection(i);
+	            connectionFound = true;
+	            break;
+	        }
+	    }
+
+	    if (!connectionFound) {
+	        throw new NoSuchElementException();
+	    }
 	}
 	
 	public void remove(T node)
