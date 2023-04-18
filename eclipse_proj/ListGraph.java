@@ -1,8 +1,6 @@
-import java.util.Collection;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
-public class ListGraph<T> {
+public class ListGraph<T> implements Graph<T> {
 	public void add(T node)
 	{
 		
@@ -22,18 +20,17 @@ public class ListGraph<T> {
 	{
 		return new HashSet<T>();
 	}
-	/*
+	
 	public Collection<Edge<T>> getEdgesFrom(T node)
 	{
-		
+		return new ArrayList<Edge<T>>();
 	}
-	*/
-	/*
+	
 	public Edge<T> getEdgeBetween(T noed1, T node2)
 	{
-		
+		return new Edge<T>(null, null, "bla", 5);
 	}
-	*/
+	
 	public void disconnect(T node1, T node2)
 	{
 		
@@ -44,14 +41,13 @@ public class ListGraph<T> {
 		
 	}
 	
-	public boolean pathExist(T from, T to)
+	public boolean pathExists(T from, T to)
 	{
 		return false;
 	}
-	/*
+	
 	public List<Edge<T>> getPath(T from, T to)
 	{
-		
+		return new ArrayList<Edge<T>>();
 	}
-	*/
 }
