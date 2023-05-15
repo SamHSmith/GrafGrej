@@ -1,5 +1,3 @@
-package PathFinder;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -8,26 +6,25 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class PathFinder extends JFrame {
-    private static final long serialVersionUID = 1L;
     private boolean unsavedChanges = false;
 
-    // Swing-komponenter här
     private JPanel mapPanel;
     private JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenuItem newMapItem, openItem, saveItem, saveImageItem, exitItem;
 
+    private JButton findPathButton, showConnectionButton, newPlaceButton, newConnectionButton, changeConnectionButton;
+
     public PathFinder() {
-        // Initialize components and add them to the window
         setTitle("PathFinder");
         setSize(850, 500);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        // Create and add mapPanel
+
         mapPanel = new JPanel();
         getContentPane().add(mapPanel, BorderLayout.CENTER);
 
-        // Create File menu and add it to JMenuBar
+
         menuBar = new JMenuBar();
         fileMenu = new JMenu("File");
         newMapItem = new JMenuItem("New Map");
@@ -44,12 +41,32 @@ public class PathFinder extends JFrame {
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
 
-        // Add ActionListener for menu items
+        // Knappar
+        findPathButton = new JButton("Find Path");
+        showConnectionButton = new JButton("Show Connection");
+        newPlaceButton = new JButton("New Place");
+        newConnectionButton = new JButton("New Connection");
+        changeConnectionButton = new JButton("Change Connection");
+
+        // Ordning på knapparna
+        mapPanel.add(findPathButton);
+        mapPanel.add(showConnectionButton);
+        mapPanel.add(newPlaceButton);
+        mapPanel.add(newConnectionButton);
+        mapPanel.add(changeConnectionButton);
+
+        
         newMapItem.addActionListener(e -> newMap());
         openItem.addActionListener(e -> open());
         saveItem.addActionListener(e -> save());
         saveImageItem.addActionListener(e -> saveImage());
         exitItem.addActionListener(e -> exit());
+        findPathButton.addActionListener(e -> findPath());
+        showConnectionButton.addActionListener(e -> showConnection());
+        newPlaceButton.addActionListener(e -> newPlace());
+        newConnectionButton.addActionListener(e -> newConnection());
+        changeConnectionButton.addActionListener(e -> changeConnection());
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -58,7 +75,6 @@ public class PathFinder extends JFrame {
         });
     }
 
-    // Methods for handling menu items
     private void newMap() {
         try {
             BufferedImage image = ImageIO.read(new File("src/europa.gif"));
@@ -75,9 +91,8 @@ public class PathFinder extends JFrame {
     }
 
     private void open() {
-        // 
+        //
     }
-
 
     private void save() {
         //
@@ -87,20 +102,39 @@ public class PathFinder extends JFrame {
         //
     }
     private void exit() {
-        if (unsavedChanges) {
-            int result = JOptionPane.showConfirmDialog(this,
-                    "Det finns osparade ändringar. Är du säker på att du vill avsluta?",
-                    "Bekräftelse av avslut",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
+            if (unsavedChanges) {
+                int result = JOptionPane.showConfirmDialog(this,
+                        "Det finns osparade ändringar. Är du säker på att du vill avsluta?",
+                        "Bekräftelse av avslut",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE);
 
-            if (result == JOptionPane.NO_OPTION) {
-                return;
+                if (result == JOptionPane.NO_OPTION) {
+                    return;
+                }
             }
+            System.exit(0);
         }
-        System.exit(0);
+
+    private void findPath() {
+        //
     }
 
+    private void showConnection() {
+        //
+    }
+
+    private void newPlace() {
+        //
+    }
+
+    private void newConnection() {
+        //
+    }
+
+    private void changeConnection() {
+        //
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
