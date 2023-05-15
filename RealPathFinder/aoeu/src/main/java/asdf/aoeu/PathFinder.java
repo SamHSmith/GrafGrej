@@ -24,6 +24,7 @@ public class PathFinder extends Application {
     private Button findPathButton, showConnectionButton, newPlaceButton, newConnectionButton, changeConnectionButton;
     
     private VBox vert_box;
+    private Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) {
@@ -71,10 +72,11 @@ public class PathFinder extends Application {
         newConnectionButton.setOnAction(e -> newConnection());
         changeConnectionButton.setOnAction(e -> changeConnection());
 
-        Scene scene = new Scene(layout, 800, 500);
+        Scene scene = new Scene(layout);
         primaryStage.setTitle("PathFinder");
         primaryStage.setScene(scene);
         primaryStage.show();
+        this.primaryStage = primaryStage;
     }
 
     private void newMap() {
@@ -86,6 +88,7 @@ public class PathFinder extends Application {
             } else {
             	vert_box.getChildren().set(1, imageView);
             }
+            primaryStage.sizeToScene();
             unsavedChanges = true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
