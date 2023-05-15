@@ -8,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,6 +22,8 @@ public class PathFinder extends Application {
     private MenuItem newMapItem, openItem, saveItem, saveImageItem, exitItem;
 
     private Button findPathButton, showConnectionButton, newPlaceButton, newConnectionButton, changeConnectionButton;
+    
+    private VBox vert_box;
 
     @Override
     public void start(Stage primaryStage) {
@@ -51,7 +54,10 @@ public class PathFinder extends Application {
         buttonBox.setPadding(new Insets(15));
         buttonBox.getChildren().addAll(findPathButton, showConnectionButton, newPlaceButton, newConnectionButton, changeConnectionButton);
 
-        layout.setCenter(buttonBox);
+        vert_box = new VBox(15);
+        vert_box.getChildren().add(buttonBox);
+        
+        layout.setCenter(vert_box);
 
         // Event Handlers
         newMapItem.setOnAction(e -> newMap());
@@ -73,9 +79,13 @@ public class PathFinder extends Application {
 
     private void newMap() {
         try {
-            Image image = new Image(new FileInputStream("src/europa.gif"));
+            Image image = new Image(new FileInputStream("europa.gif"));
             ImageView imageView = new ImageView(image);
-            layout.setCenter(imageView);
+            if(vert_box.getChildren().size() == 1) {
+            	vert_box.getChildren().add(imageView);
+            } else {
+            	vert_box.getChildren().set(1, imageView);
+            }
             unsavedChanges = true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
