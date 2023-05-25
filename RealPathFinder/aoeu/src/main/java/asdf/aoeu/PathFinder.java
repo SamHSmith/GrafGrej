@@ -24,7 +24,11 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -81,6 +85,8 @@ public class PathFinder extends Application {
 	private ArrayList<Place> places = new ArrayList<Place>();
 	private long s_counter = 0;
 	private ArrayList<Connection> connections = new ArrayList<Connection>();
+
+	private String map_url;
 
     @Override
     public void start(Stage primaryStage) {
@@ -168,8 +174,16 @@ public class PathFinder extends Application {
     }
 
     private void newMap() {
+        map_url = "file:europa.gif";
+        setMapImage();    
+        connections.clear();
+        places.clear();
+        updatePlaces();
+    }
+    
+    private void setMapImage() {
         try {
-            Image image = new Image(new URL("file:europa.gif").openStream());
+            Image image = new Image(new URL(map_url).openStream());
             ImageView imageView = new ImageView(image);
             imageView.setOnMouseClicked(e -> mouseMapPress(e.getX(), e.getY()));
             if(vert_box.getChildren().size() == 1) {
@@ -182,14 +196,86 @@ public class PathFinder extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        connections.clear();
+        places.clear();
+        updatePlaces();
     }
 
     private void open() {
-        System.out.println("Open file."); // TODO: open
+    	try {
+			BufferedReader r = new BufferedReader(new FileReader("europa.graph"));
+			map_url = r.readLine();
+			setMapImage();
+			String[] tops = r.readLine().split(";");
+			for (int i = 0; i + 2 < tops.length;) {
+				String name = tops[i+0];
+				double x = Double.parseDouble(tops[i+1]);
+				double y = Double.parseDouble(tops[i+2]);
+				i += 3;
+				
+				places.add(new Place(x, y, name));
+			}
+			
+			while(true)
+			{
+				String line = r.readLine();
+				if(line == null || line.length() == 0)
+				{ break; }
+				
+				String[] bops = line.split(";");
+				String p1n = bops[0];
+				String p2n = bops[1];
+				String cn = bops[2];
+				int time = Integer.parseInt(bops[3]);
+				
+				Place p1 = null; Place p2 = null;
+				for (int i = 0; i < places.size(); i++) {
+					if(places.get(i).name.equals(p1n))
+					{ p1 = places.get(i); }
+					if(places.get(i).name.equals(p2n))
+					{ p2 = places.get(i); }
+				}
+				
+				connections.add(new Connection(p1, p2, cn, time));
+			}
+			updatePlaces();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
     }
 
     private void save() {
-        System.out.println("Save file."); // TODO: save
+        try {
+			FileWriter w = new FileWriter("europa.graph");
+			w.write(map_url + "\n");
+			for (int i = 0; i < places.size(); i++) {
+				if(i != 0)
+				{ w.write(";"); }
+				Place p = places.get(i);
+				w.write(p.name);
+				w.write(";");
+				w.write(p.x + ";" + p.y);
+			}
+			w.write('\n');
+			
+			for (int i = 0; i < connections.size(); i++) {
+				Connection c = connections.get(i);
+				w.write(c.p1.name);
+				w.write(";");
+				w.write(c.p2.name);
+				w.write(";");
+				w.write(c.name);
+				w.write(";" + c.time);
+				w.write('\n');
+			}
+			
+			w.flush();
+			w.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
     }
 
     private void saveImage() {
@@ -280,8 +366,42 @@ public class PathFinder extends Application {
     	places.get(index).s_number = ++this.s_counter;
     	updatePlaces();
     }
+    
+    private int getSelectedConnectionIndex() {
+    	Place p1 = null; Place p2 = null;
+    	int i = 0;
+    	while(i < places.size()) {
+			if(places.get(i).selected)
+			{ p1 = places.get(i); i++; break; }
+			i++;
+		}
+    	while(i < places.size()) {
+			if(places.get(i).selected)
+			{ p2 = places.get(i); i++; break; }
+			i++;
+		}
+    	if(p1 == null || p2 == null)
+    	{ return -1; }
+    	
+    	for (int j = 0; j < connections.size(); j++) {
+			if(connections.get(j).p1 == p1 && connections.get(j).p2 == p2)
+			{ return j; }
+			if(connections.get(j).p1 == p2 && connections.get(j).p2 == p1)
+			{ return j; }
+		}
+    	return -1;
+    }
 
     private void newConnection() {
+    	if(getSelectedConnectionIndex() != -1)
+    	{
+    		Alert a = new Alert(AlertType.ERROR);
+    		a.setHeaderText(null);
+    		a.setContentText("Connection already exists, use \"Change Connection\" instead.");
+    		a.showAndWait();
+    		return;
+    	}
+    	
     	{
         	int count = 0;
         	for (int i = 0; i < places.size(); i++) {
@@ -336,16 +456,90 @@ public class PathFinder extends Application {
     	if(!was_confirm)
     	{ return; }
     	
-    	// TODO parse and error handling
+    	String connection_name = nameField.getText();
+    	int connection_time = -1;
+    	try {
+    		connection_time = Integer.parseInt(timeField.getText());
+    	} catch(Exception e) {}
     	
-    	String connection_name = "dave";
-    	int connection_time = 5;
+    	if(connection_name.length() == 0)
+    	{
+    		Alert a = new Alert(AlertType.ERROR, "Bad connection name. Cannot be empty.");
+    		a.setTitle("Error!");
+    		a.setHeaderText(null);
+    		a.showAndWait();
+    		return;
+    	}
+    	if(connection_time < 0)
+    	{
+    		Alert a = new Alert(AlertType.ERROR, "Bad connection time value. Must be a positive integer.");
+    		a.setTitle("Error!");
+    		a.setHeaderText(null);
+    		a.showAndWait();
+    		return;
+    	}
+    	
     	connections.add(new Connection(p1, p2, connection_name, connection_time));
     	updatePlaces();
     }
 
     private void changeConnection() {
-        //
+    	int connection_index = getSelectedConnectionIndex();
+    	if(connection_index == -1)
+    	{
+    		Alert a = new Alert(AlertType.ERROR);
+    		a.setHeaderText(null);
+    		a.setContentText("Connection does not exist, use \"New Connection\" instead.");
+    		a.showAndWait();
+    		return;
+    	}
+    	
+    	Connection con = connections.get(connection_index);
+    	
+    	TextInputDialog dialog = new TextInputDialog("");
+		GridPane grid = new GridPane();
+		grid.setAlignment(null);
+		grid.setPadding(new Insets(10));
+		
+		TextField nameField = new TextField(con.name);
+		nameField.setEditable(false);
+		TextField timeField = new TextField();
+		
+		grid.addRow(1, new Label("Name: "), nameField);
+		grid.addRow(2, new Label("Time: "), timeField);
+    	
+		dialog.getDialogPane().setContent(grid);
+    	dialog.setHeaderText(null);
+    	dialog.setTitle("Connection");
+    	boolean was_confirm = dialog.showAndWait().isPresent();
+    	if(!was_confirm)
+    	{ return; }
+    	
+    	String connection_name = nameField.getText();
+    	int connection_time = -1;
+    	try {
+    		connection_time = Integer.parseInt(timeField.getText());
+    	} catch(Exception e) {}
+    	
+    	if(connection_name.length() == 0)
+    	{
+    		Alert a = new Alert(AlertType.ERROR, "Bad connection name. Cannot be empty.");
+    		a.setTitle("Error!");
+    		a.setHeaderText(null);
+    		a.showAndWait();
+    		return;
+    	}
+    	if(connection_time < 0)
+    	{
+    		Alert a = new Alert(AlertType.ERROR, "Bad connection time value. Must be a positive integer.");
+    		a.setTitle("Error!");
+    		a.setHeaderText(null);
+    		a.showAndWait();
+    		return;
+    	}
+    	
+    	con.name = connection_name;
+    	con.time = connection_time;
     }
 
     public static void main(String[] args) {
