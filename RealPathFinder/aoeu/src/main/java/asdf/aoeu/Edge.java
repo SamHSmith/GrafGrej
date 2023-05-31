@@ -1,4 +1,4 @@
-// PROG2 VT2023, Inlämningsuppgift, del 1
+// PROG2 VT2023, Inlämningsuppgift, del 2
 // Grupp 100
 // Sam Smith sasm7798
 // Marcus Berngarn mabe1838
