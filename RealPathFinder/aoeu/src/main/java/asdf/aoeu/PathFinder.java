@@ -27,6 +27,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import javafx.scene.layout.Pane;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -36,6 +37,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +49,7 @@ class Place {
 	public boolean selected;
 	public String name;
 	public long s_number;
+	public Circle circle;
 
 	public Place(double x, double y, String name) {
 		this.x = x;
@@ -89,13 +92,16 @@ public class PathFinder extends Application {
 
 	private boolean new_place_mode;
 
-	private Group circles;
 	private ArrayList<Place> places = new ArrayList<Place>();
 	private long s_counter = 0;
 	private ArrayList<Connection> connections = new ArrayList<Connection>();
 
 	private String map_url;
-	private double yoffset = 0.0;
+	public Pane mapPane;
+
+	private ListGraph<Circle> graph = new ListGraph<>();
+	private Canvas can;
+	private ImageView imageView;
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -103,12 +109,19 @@ public class PathFinder extends Application {
 
 		// Create the menu
 		menuBar = new MenuBar();
+		menuBar.setId("menu");
 		fileMenu = new Menu("File");
+		fileMenu.setId("menuFile");
 		newMapItem = new MenuItem("New Map");
+		newMapItem.setId("menuNewMap");
 		openItem = new MenuItem("Open");
+		openItem.setId("menuOpenFile");
 		saveItem = new MenuItem("Save");
+		saveItem.setId("menuSaveFile");
 		saveImageItem = new MenuItem("Save Image");
+		saveImageItem.setId("menuSaveImage");
 		exitItem = new MenuItem("Exit");
+		exitItem.setId("menuExit");
 
 		fileMenu.getItems().addAll(newMapItem, openItem, saveItem, saveImageItem, exitItem);
 		menuBar.getMenus().add(fileMenu);
@@ -117,10 +130,15 @@ public class PathFinder extends Application {
 
 		// Create the buttons
 		findPathButton = new Button("Find Path");
+		findPathButton.setId("btnFindPath");
 		showConnectionButton = new Button("Show Connection");
+		showConnectionButton.setId("btnShowConnection");
 		newPlaceButton = new Button("New Place");
+		newPlaceButton.setId("btnNewPlace");
 		newConnectionButton = new Button("New Connection");
+		newConnectionButton.setId("btnNewConnection");
 		changeConnectionButton = new Button("Change Connection");
+		changeConnectionButton.setId("btnChangeConnection");
 
 		HBox buttonBox = new HBox(15);
 		buttonBox.setPadding(new Insets(15));
@@ -129,6 +147,9 @@ public class PathFinder extends Application {
 
 		vert_box = new VBox(15);
 		vert_box.getChildren().add(buttonBox);
+		mapPane = new Pane();
+		mapPane.setId("outputArea");
+		vert_box.getChildren().add(mapPane);
 
 		layout.setCenter(vert_box);
 
@@ -144,42 +165,56 @@ public class PathFinder extends Application {
 		newConnectionButton.setOnAction(e -> newConnection());
 		changeConnectionButton.setOnAction(e -> changeConnection());
 
-		this.circles = new Group();
-		layout.getChildren().add(circles);
-
 		Scene scene = new Scene(layout);
 		primaryStage.setTitle("PathFinder");
 		primaryStage.setScene(scene);
 		primaryStage.show();
 		this.primaryStage = primaryStage;
 
-		yoffset = layout.getHeight() + vert_box.getSpacing();
+		can = new Canvas(primaryStage.getScene().getWidth(), primaryStage.getScene().getHeight());
+		can.mouseTransparentProperty().set(true);
+		mapPane.getChildren().add(can);
+
+		open();
 	}
 
 	private void updatePlaces() {
-		this.circles.getChildren().clear();
+		mapPane.getChildren().clear();
+		if (imageView != null) {
+			mapPane.getChildren().add(imageView);
+		}
+		mapPane.getChildren().add(can);
+
 		for (int i = 0; i < places.size(); i++) {
 			Circle c;
 			if (places.get(i).selected) {
-				c = new Circle(places.get(i).x, places.get(i).y + yoffset, CIRCLE_RAD, Paint.valueOf("RED"));
+				c = new Circle(places.get(i).x, places.get(i).y, CIRCLE_RAD, Paint.valueOf("RED"));
 			} else {
-				c = new Circle(places.get(i).x, places.get(i).y + yoffset, CIRCLE_RAD, Paint.valueOf("BLUE"));
+				c = new Circle(places.get(i).x, places.get(i).y, CIRCLE_RAD, Paint.valueOf("BLUE"));
 			}
+			places.get(i).circle = c;
+			c.setId(places.get(i).name);
 			c.setOnMouseClicked(e -> placePress(e.getSource()));
-			circles.getChildren().add(c);
+			mapPane.getChildren().add(c);
 		}
 
-		Canvas can = new Canvas(primaryStage.getScene().getWidth(), primaryStage.getScene().getHeight());
-		can.mouseTransparentProperty().set(true);
-		circles.getChildren().add(can);
+		updateLines();
+	}
 
+	private void updateLines() {
+		if (can == null) {
+			return;
+		}
+		can.setWidth(primaryStage.getScene().getWidth());
+		can.setHeight(primaryStage.getScene().getHeight());
 		GraphicsContext gc = can.getGraphicsContext2D();
+		gc.clearRect(0, 0, can.getWidth(), can.getHeight());
 		gc.setStroke(Color.BLACK);
 		gc.setLineWidth(LINE_WIDTH);
 		for (int i = 0; i < connections.size(); i++) {
 			Place p1 = connections.get(i).p1;
 			Place p2 = connections.get(i).p2;
-			gc.strokeLine(p1.x, p1.y + yoffset, p2.x, p2.y + yoffset);
+			gc.strokeLine(p1.x, p1.y, p2.x, p2.y);
 		}
 	}
 
@@ -189,20 +224,15 @@ public class PathFinder extends Application {
 		connections.clear();
 		places.clear();
 		updatePlaces();
+		resetState();
 	}
 
 	private void setMapImage() {
 		try {
-			Image image = new Image(new URL(map_url).openStream());
-			ImageView imageView = new ImageView(image);
+			Image image = new Image(map_url);
+			imageView = new ImageView(image);
 			imageView.setOnMouseClicked(e -> mouseMapPress(e.getX(), e.getY()));
 
-			if (vert_box.getChildren().size() == 1) {
-				vert_box.getChildren().add(imageView);
-			} else {
-				vert_box.getChildren().set(1, imageView);
-			}
-			primaryStage.sizeToScene();
 			unsavedChanges = true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -210,11 +240,20 @@ public class PathFinder extends Application {
 		connections.clear();
 		places.clear();
 		updatePlaces();
+		primaryStage.sizeToScene();
 	}
 
 	private void open() {
-		try {
-			BufferedReader r = new BufferedReader(new FileReader("europa.graph"));
+		if (unsavedChanges) {
+			Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+			alert.setTitle("Bekräftelse av open");
+			alert.setHeaderText("Det finns osparade ändringar. Är du säker på att du vill öppna?");
+
+			if (alert.showAndWait().get() != ButtonType.OK) {
+				return;
+			}
+		}
+		try (BufferedReader r = new BufferedReader(new FileReader("europa.graph"))) {
 			map_url = r.readLine();
 			setMapImage();
 			String[] tops = r.readLine().split(";");
@@ -227,10 +266,10 @@ public class PathFinder extends Application {
 				places.add(new Place(x, y, name));
 			}
 
-			while (true) {
-				String line = r.readLine();
-				if (line == null || line.length() == 0) {
-					break;
+			String line;
+			while ((line = r.readLine()) != null) {
+				if (line.length() == 0) {
+					continue;
 				}
 
 				String[] bops = line.split(";");
@@ -241,18 +280,21 @@ public class PathFinder extends Application {
 
 				Place p1 = null;
 				Place p2 = null;
-				for (int i = 0; i < places.size(); i++) {
-					if (places.get(i).name.equals(p1n)) {
-						p1 = places.get(i);
+				for (Place place : places) {
+					if (place.name.equals(p1n)) {
+						p1 = place;
 					}
-					if (places.get(i).name.equals(p2n)) {
-						p2 = places.get(i);
+					if (place.name.equals(p2n)) {
+						p2 = place;
 					}
 				}
 
-				connections.add(new Connection(p1, p2, cn, time));
+				if (p1 != null && p2 != null) {
+					connections.add(new Connection(p1, p2, cn, time));
+				}
 			}
 			updatePlaces();
+			resetState();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -326,60 +368,76 @@ public class PathFinder extends Application {
 		this.primaryStage.getScene().setCursor(Cursor.DEFAULT);
 		this.new_place_mode = false;
 		this.newPlaceButton.setDisable(false);
+
+		{
+			for (Circle c : graph.getNodes()) {
+				graph.remove(c);
+			}
+			for (int i = 0; i < places.size(); i++) {
+				graph.add(places.get(i).circle);
+			}
+			for (int i = 0; i < connections.size(); i++) {
+				Connection c = connections.get(i);
+				try {
+					graph.connect(c.p1.circle, c.p2.circle, c.name, c.time);
+				} catch(Exception e) {}
+			}
+		}
 	}
 
 	private void findPath() {
 		resetState();
-		
+
 		Place p1 = null;
 		Place p2 = null;
 		{
-		int i = 0;
-		while (i < places.size()) {
-			if (places.get(i).selected) {
-				p1 = places.get(i);
+			int i = 0;
+			while (i < places.size()) {
+				if (places.get(i).selected) {
+					p1 = places.get(i);
+					i++;
+					break;
+				}
 				i++;
-				break;
 			}
-			i++;
-		}
-		while (i < places.size()) {
-			if (places.get(i).selected) {
-				p2 = places.get(i);
+			while (i < places.size()) {
+				if (places.get(i).selected) {
+					p2 = places.get(i);
+					i++;
+					break;
+				}
 				i++;
-				break;
 			}
-			i++;
+			if (p1 == null || p2 == null) {
+				Alert a = new Alert(AlertType.ERROR);
+				a.setHeaderText(null);
+				a.setContentText("Two places must be selected.");
+				a.showAndWait();
+				return;
+			}
 		}
-		if (p1 == null || p2 == null) {
-			Alert a = new Alert(AlertType.ERROR);
-			a.setHeaderText(null);
-			a.setContentText("Two places must be selected.");
-			a.showAndWait();
-			return;
-		}
-		}
-		
+
 		ListGraph<Place> graph = new ListGraph<Place>();
-		
+
 		for (int i = 0; i < places.size(); i++) {
 			graph.add(places.get(i));
 		}
 		for (int i = 0; i < connections.size(); i++) {
 			Connection c = connections.get(i);
-			graph.connect(c.p1, c.p2, c.name, c.time);
+			try {
+				graph.connect(c.p1, c.p2, c.name, c.time);
+			} catch(Exception e) {}
 		}
-		
+
 		List<Edge<Place>> path = graph.getPath(p1, p2);
-		if(path == null)
-		{
+		if (path == null) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setHeaderText(null);
 			a.setContentText("There is no path.");
 			a.showAndWait();
 			return;
 		}
-		
+
 		String str = "";
 		int total = 0;
 		for (int i = 0; i < path.size(); i++) {
@@ -388,7 +446,7 @@ public class PathFinder extends Application {
 			total += e.getWeight();
 		}
 		str += "Total " + total + "\n";
-		
+
 		Alert a = new Alert(AlertType.INFORMATION);
 		a.setHeaderText("The path from " + p1.name + " to " + p2.name);
 
@@ -399,6 +457,8 @@ public class PathFinder extends Application {
 	}
 
 	private void showConnection() {
+		resetState();
+
 		int connection_index = getSelectedConnectionIndex();
 		if (connection_index == -1) {
 			Alert a = new Alert(AlertType.ERROR);
@@ -437,7 +497,6 @@ public class PathFinder extends Application {
 	}
 
 	private void mouseMapPress(double mx, double my) {
-		System.out.println("Press " + mx + " " + my);
 
 		if (this.new_place_mode) {
 			TextInputDialog dialog = new TextInputDialog("");
@@ -457,8 +516,9 @@ public class PathFinder extends Application {
 	}
 
 	private void placePress(Object o) {
-		int index = circles.getChildren().indexOf(o);
-		System.out.println("Pressed index = " + index);
+		resetState();
+
+		int index = mapPane.getChildren().indexOf(o) - 2;
 
 		int count = 0;
 		for (int i = 0; i < places.size(); i++) {
@@ -473,7 +533,11 @@ public class PathFinder extends Application {
 
 		places.get(index).selected = !places.get(index).selected;
 		places.get(index).s_number = ++this.s_counter;
-		updatePlaces();
+		if (places.get(index).selected) {
+			((Circle) o).setFill(Color.RED);
+		} else {
+			((Circle) o).setFill(Color.BLUE);
+		}
 	}
 
 	private int getSelectedConnectionIndex() {
@@ -512,6 +576,8 @@ public class PathFinder extends Application {
 	}
 
 	private void newConnection() {
+		resetState();
+
 		if (getSelectedConnectionIndex() != -1) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setHeaderText(null);
@@ -560,7 +626,6 @@ public class PathFinder extends Application {
 			p1 = p2;
 			p2 = t;
 		}
-		System.out.println("NC " + p1.name + " -> " + p2.name);
 
 		TextInputDialog dialog = new TextInputDialog("");
 		GridPane grid = new GridPane();
@@ -604,11 +669,14 @@ public class PathFinder extends Application {
 		}
 
 		connections.add(new Connection(p1, p2, connection_name, connection_time));
-		updatePlaces();
+		updateLines();
+		resetState();
 		unsavedChanges = true;
 	}
 
 	private void changeConnection() {
+		resetState();
+
 		int connection_index = getSelectedConnectionIndex();
 		if (connection_index == -1) {
 			Alert a = new Alert(AlertType.ERROR);

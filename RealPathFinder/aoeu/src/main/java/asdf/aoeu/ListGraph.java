@@ -5,7 +5,6 @@
 
 package asdf.aoeu;
 
-
 import java.util.*;
 
 public class ListGraph<T> implements Graph<T> {
@@ -179,23 +178,23 @@ public class ListGraph<T> implements Graph<T> {
 	    }
 	}
 	
-	public void remove(T node)
-	{
+	public void remove(T node) {
 		if (!allNodes.contains(node)) {
-	        throw new NoSuchElementException();
-	    }
-		
-		ArrayList<Integer> toRemove = new ArrayList<Integer>();
-		for(int i = 0; i < nodesOne.size(); i++)
-		{
-			if(nodesOne.get(i) == node || nodesTwo.get(i) == node)
-			{
-				toRemove.add(i);
-			}
+			throw new NoSuchElementException();
 		}
-		for(int index : toRemove)
-		{
-			nuke_soa_connection(index);
+
+		while (true) {
+			boolean again = false;
+			for (int i = 0; i < nodesOne.size(); i++) {
+				if ((nodesOne.get(i) == node || nodesTwo.get(i) == node)) {
+					nuke_soa_connection(i);
+					again = true;
+					break;
+				}
+			}
+			if (!again) {
+				break;
+			}
 		}
 		allNodes.remove(node);
 	}
@@ -289,3 +288,4 @@ public class ListGraph<T> implements Graph<T> {
 		return builder.toString();
 	}
 }
+
