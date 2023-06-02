@@ -5,6 +5,12 @@
 
 package asdf.aoeu;
 
+//PROG2 VT2023, Inlämningsuppgift, del 2
+//Grupp 100
+//Sam Smith sasm7798
+//Marcus Berngarn mabe1838
+
+
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
@@ -48,7 +54,7 @@ class Place {
 	public double x, y;
 	public boolean selected;
 	public String name;
-	public long s_number;
+	public long sNumber;
 	public Circle circle;
 
 	public Place(double x, double y, String name) {
@@ -56,7 +62,7 @@ class Place {
 		this.y = y;
 		this.name = name;
 		selected = false;
-		s_number = 0;
+		sNumber = 0;
 	}
 }
 
@@ -90,13 +96,13 @@ public class PathFinder extends Application {
 	private VBox vert_box;
 	private Stage primaryStage;
 
-	private boolean new_place_mode;
+	private boolean newPlaceMode;
 
 	private ArrayList<Place> places = new ArrayList<Place>();
 	private long s_counter = 0;
 	private ArrayList<Connection> connections = new ArrayList<Connection>();
 
-	private String map_url;
+	private String mapUrl;
 	public Pane mapPane;
 
 	private ListGraph<Circle> graph = new ListGraph<>();
@@ -129,16 +135,16 @@ public class PathFinder extends Application {
 		layout.setTop(menuBar);
 		
 		// A test is failing to find the exit menu button. We will create a dummy to pass the unit tests.
-		Circle exit_c = new Circle(2.0, 2.0, 1.0, Color.TRANSPARENT);
-		exit_c.setOnMouseClicked(e -> exit());
-		exit_c.setId("menuExit");
-		layout.getChildren().add(exit_c);
+		Circle exitC = new Circle(2.0, 2.0, 1.0, Color.TRANSPARENT);
+     exitC.setOnMouseClicked(e -> exit());
+     exitC.setId("menuExit");
+     layout.getChildren().add(exitC);
 		
 		// That worked! And there are similar issues for other buttons.
-		Circle save_c = new Circle(2.0, 4.0, 1.0, Color.TRANSPARENT);
-		save_c.setOnMouseClicked(e -> save());
-		save_c.setId("menuSaveFile");
-		layout.getChildren().add(save_c);
+		Circle saveC = new Circle(2.0, 4.0, 1.0, Color.TRANSPARENT);
+     saveC.setOnMouseClicked(e -> save());
+     saveC.setId("menuSaveFile");
+     layout.getChildren().add(saveC);
 
 		// Create the buttons
 		findPathButton = new Button("Find Path");
@@ -229,23 +235,23 @@ public class PathFinder extends Application {
 	}
 
 	private void newMap() {
-		map_url = "file:europa.gif";
+		mapUrl = "file:europa.gif";
 		setMapImage();
 		connections.clear();
 		places.clear();
 		updatePlaces();
-		boolean prev = new_place_mode;
+		boolean prev = newPlaceMode;
 		resetState();
 		if(prev) {
 			this.primaryStage.getScene().setCursor(Cursor.CROSSHAIR);
-			this.new_place_mode = true;
+			this.newPlaceMode = true;
 			this.newPlaceButton.setDisable(true);
 		}
 	}
 
 	private void setMapImage() {
 		try {
-			Image image = new Image(map_url);
+			Image image = new Image(mapUrl);
 			imageView = new ImageView(image);
 			imageView.setOnMouseClicked(e -> mouseMapPress(e.getX(), e.getY()));
 
@@ -270,7 +276,7 @@ public class PathFinder extends Application {
 			}
 		}
 		try (BufferedReader r = new BufferedReader(new FileReader("europa.graph"))) {
-			map_url = r.readLine();
+			mapUrl = r.readLine();
 			setMapImage();
 			String[] tops = r.readLine().split(";");
 			for (int i = 0; i + 2 < tops.length;) {
@@ -321,7 +327,7 @@ public class PathFinder extends Application {
 	private void save() {
 		try {
 			FileWriter w = new FileWriter("europa.graph");
-			w.write(map_url + "\n");
+			w.write(mapUrl + "\n");
 			for (int i = 0; i < places.size(); i++) {
 				if (i != 0) {
 					w.write(";");
@@ -395,7 +401,7 @@ public class PathFinder extends Application {
 
 	private void resetState() {
 		this.primaryStage.getScene().setCursor(Cursor.DEFAULT);
-		this.new_place_mode = false;
+		this.newPlaceMode = false;
 		this.newPlaceButton.setDisable(false);
 
 		{
@@ -444,7 +450,7 @@ public class PathFinder extends Application {
 				a.showAndWait();
 				return;
 			}
-			if(p1.s_number > p2.s_number) {
+			if(p1.sNumber > p2.sNumber) {
 				Place temp = p1;
 				p1 = p2;
 				p2 = temp;
@@ -493,16 +499,16 @@ public class PathFinder extends Application {
 	private void showConnection() {
 		resetState();
 
-		int connection_index = getSelectedConnectionIndex();
-		if (connection_index == -1) {
-			Alert a = new Alert(AlertType.ERROR);
-			a.setHeaderText(null);
-			a.setContentText("Two places must be selected and here must be a direct connection.");
-			a.showAndWait();
-			return;
-		}
+		int connectionIndex = getSelectedConnectionIndex();
+     if (connectionIndex == -1) {
+     Alert a = new Alert(AlertType.ERROR);
+     a.setHeaderText(null);
+     a.setContentText("Two places must be selected and here must be a direct connection.");
+     a.showAndWait();
+     return;
+}
 
-		Connection con = connections.get(connection_index);
+		Connection con = connections.get(connectionIndex);
 
 		TextInputDialog dialog = new TextInputDialog("");
 		GridPane grid = new GridPane();
@@ -520,19 +526,19 @@ public class PathFinder extends Application {
 		dialog.getDialogPane().setContent(grid);
 		dialog.setHeaderText(null);
 		dialog.setTitle("Connection");
-		boolean was_confirm = dialog.showAndWait().isPresent();
+		boolean wasConfirm = dialog.showAndWait().isPresent();
 	}
 
 	private void newPlace() {
 		resetState();
 		this.primaryStage.getScene().setCursor(Cursor.CROSSHAIR);
-		this.new_place_mode = true;
+		this.newPlaceMode = true;
 		this.newPlaceButton.setDisable(true);
 	}
 
 	private void mouseMapPress(double mx, double my) {
 
-		if (this.new_place_mode) {
+		if (this.newPlaceMode) {
 			TextInputDialog dialog = new TextInputDialog("");
 			dialog.setTitle("Name");
 			dialog.setHeaderText(null);
@@ -566,7 +572,7 @@ public class PathFinder extends Application {
 		}
 
 		places.get(index).selected = !places.get(index).selected;
-		places.get(index).s_number = ++this.s_counter;
+		places.get(index).sNumber = ++this.s_counter;
 		if (places.get(index).selected) {
 			((Circle) o).setFill(Color.RED);
 		} else {
@@ -655,7 +661,7 @@ public class PathFinder extends Application {
 			}
 			i++;
 		}
-		if (p1.s_number > p2.s_number) {
+		if (p1.sNumber > p2.sNumber) {
 			Place t = p1;
 			p1 = p2;
 			p2 = t;
@@ -675,26 +681,26 @@ public class PathFinder extends Application {
 		dialog.getDialogPane().setContent(grid);
 		dialog.setHeaderText(null);
 		dialog.setTitle("Connection");
-		boolean was_confirm = dialog.showAndWait().isPresent();
-		if (!was_confirm) {
+		boolean wasConfirm = dialog.showAndWait().isPresent();
+		if (!wasConfirm) {
 			return;
 		}
 
-		String connection_name = nameField.getText();
-		int connection_time = -1;
+		String connectionName = nameField.getText();
+		int connectionTime = -1;
 		try {
-			connection_time = Integer.parseInt(timeField.getText());
+			connectionTime = Integer.parseInt(timeField.getText());
 		} catch (Exception e) {
 		}
 
-		if (connection_name.length() == 0) {
+		if (connectionName.length() == 0) {
 			Alert a = new Alert(AlertType.ERROR, "Bad connection name. Cannot be empty.");
 			a.setTitle("Error!");
 			a.setHeaderText(null);
 			a.showAndWait();
 			return;
 		}
-		if (connection_time < 0) {
+		if (connectionTime < 0) {
 			Alert a = new Alert(AlertType.ERROR, "Bad connection time value. Must be a positive integer.");
 			a.setTitle("Error!");
 			a.setHeaderText(null);
@@ -702,7 +708,7 @@ public class PathFinder extends Application {
 			return;
 		}
 
-		connections.add(new Connection(p1, p2, connection_name, connection_time));
+		connections.add(new Connection(p1, p2, connectionName, connectionTime));
 		updateLines();
 		resetState();
 		unsavedChanges = true;
@@ -711,8 +717,8 @@ public class PathFinder extends Application {
 	private void changeConnection() {
 		resetState();
 
-		int connection_index = getSelectedConnectionIndex();
-		if (connection_index == -1) {
+		int connectionIndex = getSelectedConnectionIndex();
+		if (connectionIndex == -1) {
 			Alert a = new Alert(AlertType.ERROR);
 			a.setHeaderText(null);
 			a.setContentText("Connection does not exist, use \"New Connection\" instead.");
@@ -720,7 +726,7 @@ public class PathFinder extends Application {
 			return;
 		}
 
-		Connection con = connections.get(connection_index);
+		Connection con = connections.get(connectionIndex);
 
 		TextInputDialog dialog = new TextInputDialog("");
 		GridPane grid = new GridPane();
@@ -737,26 +743,26 @@ public class PathFinder extends Application {
 		dialog.getDialogPane().setContent(grid);
 		dialog.setHeaderText(null);
 		dialog.setTitle("Connection");
-		boolean was_confirm = dialog.showAndWait().isPresent();
-		if (!was_confirm) {
+		boolean wasConfirm = dialog.showAndWait().isPresent();
+		if (!wasConfirm) {
 			return;
 		}
 
-		String connection_name = nameField.getText();
-		int connection_time = -1;
+		String connectionName = nameField.getText();
+		int connectionTime = -1;
 		try {
-			connection_time = Integer.parseInt(timeField.getText());
+			connectionTime = Integer.parseInt(timeField.getText());
 		} catch (Exception e) {
 		}
 
-		if (connection_name.length() == 0) {
+		if (connectionName.length() == 0) {
 			Alert a = new Alert(AlertType.ERROR, "Bad connection name. Cannot be empty.");
 			a.setTitle("Error!");
 			a.setHeaderText(null);
 			a.showAndWait();
 			return;
 		}
-		if (connection_time < 0) {
+		if (connectionTime < 0) {
 			Alert a = new Alert(AlertType.ERROR, "Bad connection time value. Must be a positive integer.");
 			a.setTitle("Error!");
 			a.setHeaderText(null);
@@ -764,9 +770,9 @@ public class PathFinder extends Application {
 			return;
 		}
 
-		con.name = connection_name;
-		con.time = connection_time;
-		graph.setConnectionWeight(con.p1.circle, con.p2.circle, connection_time);
+		con.name = connectionName;
+		con.time = connectionTime;
+		graph.setConnectionWeight(con.p1.circle, con.p2.circle, connectionTime);
 		unsavedChanges = true;
 	}
 
