@@ -15,8 +15,6 @@ import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
-import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -40,71 +38,149 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import javax.imageio.ImageIO;
 
-class Place {
-	public double x, y;
-	public boolean selected;
-	public String name;
-	public long sNumber;
-	public Circle circle;
-
-	public Place(double x, double y, String name) {
-		this.x = x;
-		this.y = y;
-		this.name = name;
-		selected = false;
-		sNumber = 0;
-	}
-}
-
-class Connection {
-	public Place p1, p2;
-	public String name;
-	public int time;
-
-	public Connection(Place p1, Place p2, String name, int time) {
-		this.p1 = p1;
-		this.p2 = p2;
-		this.name = name;
-		this.time = time;
-	}
-}
-
 public class PathFinder extends Application {
+
+	class Place {
+		private double x;
+		private double y;
+		private boolean selected;
+		private String name;
+		private long number;
+		private Circle circle;
+
+		Place(double x, double y, String name) {
+			this.x = x;
+			this.y = y;
+			this.name = name;
+			this.selected = false;
+			this.number = 0;
+		}
+
+		public double getX() {
+			return x;
+		}
+
+		public void setX(double x) {
+			this.x = x;
+		}
+
+		public double getY() {
+			return y;
+		}
+
+		public void setY(double y) {
+			this.y = y;
+		}
+
+		public boolean isSelected() {
+			return selected;
+		}
+
+		public void setSelected(boolean selected) {
+			this.selected = selected;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public long getNumber() {
+			return number;
+		}
+
+		public void setNumber(long number) {
+			this.number = number;
+		}
+
+		public Circle getCircle() {
+			return circle;
+		}
+
+		public void setCircle(Circle circle) {
+			this.circle = circle;
+		}
+	}
+
+	class Connection {
+		private Place p1;
+		private Place p2;
+		private String name;
+		private int time;
+
+		Connection(Place p1, Place p2, String name, int time) {
+			this.p1 = p1;
+			this.p2 = p2;
+			this.name = name;
+			this.time = time;
+		}
+
+		public Place getP1() {
+			return p1;
+		}
+
+		public void setP1(Place p1) {
+			this.p1 = p1;
+		}
+
+		public Place getP2() {
+			return p2;
+		}
+
+		public void setP2(Place p2) {
+			this.p2 = p2;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public int getTime() {
+			return time;
+		}
+
+		public void setTime(int time) {
+			this.time = time;
+		}
+	}
+
 	private static final double CIRCLE_RAD = 15;
-
 	private static final double LINE_WIDTH = 5;
-
 	private boolean unsavedChanges = false;
-
 	private BorderPane layout;
 	private MenuBar menuBar;
 	private Menu fileMenu;
-	private MenuItem newMapItem, openItem, saveItem, saveImageItem, exitItem;
-
-	private Button findPathButton, showConnectionButton, newPlaceButton, newConnectionButton, changeConnectionButton;
-
-	private VBox vert_box;
+	private MenuItem newMapItem;
+	private MenuItem openItem;
+	private MenuItem saveItem;
+	private MenuItem saveImageItem;
+	private MenuItem exitItem;
+	private Button findPathButton;
+	private Button showConnectionButton;
+	private Button newPlaceButton;
+	private Button newConnectionButton;
+	private Button changeConnectionButton;
+	private VBox vertBox;
 	private Stage primaryStage;
-
 	private boolean newPlaceMode;
-
-	private ArrayList<Place> places = new ArrayList<Place>();
-	private long s_counter = 0;
-	private ArrayList<Connection> connections = new ArrayList<Connection>();
-
+	private ArrayList<Place> places = new ArrayList<>();
+	private long counter = 0;
+	private ArrayList<Connection> connections = new ArrayList<>();
 	private String mapUrl;
-	public Pane mapPane;
-
+	private Pane mapPane;
 	private ListGraph<Circle> graph = new ListGraph<>();
 	private Canvas can;
 	private ImageView imageView;
@@ -163,13 +239,13 @@ public class PathFinder extends Application {
 		buttonBox.getChildren().addAll(findPathButton, showConnectionButton, newPlaceButton, newConnectionButton,
 				changeConnectionButton);
 
-		vert_box = new VBox(15);
-		vert_box.getChildren().add(buttonBox);
+		vertBox = new VBox(15);
+		vertBox.getChildren().add(buttonBox);
 		mapPane = new Pane();
 		mapPane.setId("outputArea");
-		vert_box.getChildren().add(mapPane);
+		vertBox.getChildren().add(mapPane);
 
-		layout.setCenter(vert_box);
+		layout.setCenter(vertBox);
 
 		// Event Handlers
 		newMapItem.setOnAction(e -> newMap());
@@ -450,7 +526,7 @@ public class PathFinder extends Application {
 				a.showAndWait();
 				return;
 			}
-			if(p1.sNumber > p2.sNumber) {
+			if(p1.number > p2.number) {
 				Place temp = p1;
 				p1 = p2;
 				p2 = temp;
@@ -572,7 +648,7 @@ public class PathFinder extends Application {
 		}
 
 		places.get(index).selected = !places.get(index).selected;
-		places.get(index).sNumber = ++this.s_counter;
+		places.get(index).number = ++this.counter;
 		if (places.get(index).selected) {
 			((Circle) o).setFill(Color.RED);
 		} else {
@@ -661,7 +737,7 @@ public class PathFinder extends Application {
 			}
 			i++;
 		}
-		if (p1.sNumber > p2.sNumber) {
+		if (p1.number > p2.number) {
 			Place t = p1;
 			p1 = p2;
 			p2 = t;
